@@ -274,6 +274,6 @@ impl MyGame {
     fn analog_trigger(&self, value: f32, x_pos: i32, y_pos: i32, width: u32, height: u32) {
         gc::rect(RELEASED_COLOR, x_pos, y_pos, width, height);
         let y = ((y_pos + height as i32) as f32 - (height as f32 * value)).round() as i32;
-        gc::line(PRESSED_COLOR, x_pos, y, width as i32 as i32, y);
+        gc::line(PRESSED_COLOR, x_pos, y, x_pos + width as i32 as i32, y);
     }
 }
