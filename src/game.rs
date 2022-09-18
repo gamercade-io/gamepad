@@ -75,10 +75,7 @@ impl crate::Game for MyGame {
         self.draw_dpad();
         self.draw_start_select();
         self.draw_sticks();
-
-        // TODO: Draw Shoulders
-
-        // TODO: Draw Triggers
+        self.draw_shoulders();
     }
 }
 
@@ -229,5 +226,54 @@ impl MyGame {
     fn draw_cross(&self, gp: GraphicsParameters, x: i32, y: i32, half_length: i32) {
         gc::line(gp, x - half_length, y, x + half_length, y);
         gc::line(gp, x, y - half_length, x, y + half_length);
+    }
+
+    fn draw_shoulders(&self) {
+        // Draw Shoulder Buttons
+        let columns = (self.width / 4) as i32;
+        let row = (self.height / 6) as i32;
+        let width = (self.width / 15) as u32;
+        let height = (self.height / 15) as u32;
+
+        gc::rect(
+            self.get_button_color(self.left_shoulder),
+            columns - (width / 2) as i32,
+            row - (height / 2) as i32,
+            width,
+            height,
+        );
+
+        gc::rect(
+            self.get_button_color(self.right_shoulder),
+            (columns * 3) - (width / 2) as i32,
+            row - (height / 2) as i32,
+            width,
+            height,
+        );
+
+        // Draw Analog Triggers
+        let columns = (self.width / 20) as i32;
+        let max_height = (self.height / 4) as u32;
+
+        self.analog_trigger(
+            self.left_trigger,
+            columns * 1,
+            row / 3,
+            columns as u32,
+            max_height,
+        );
+        self.analog_trigger(
+            self.right_trigger,
+            columns * 18,
+            row / 3,
+            columns as u32,
+            max_height,
+        );
+    }
+
+    fn analog_trigger(&self, value: f32, x_pos: i32, y_pos: i32, width: u32, height: u32) {
+        gc::rect(RELEASED_COLOR, x_pos, y_pos, width, height);
+        let y = ((y_pos + height as i32) as f32 - (height as f32 * value)).round() as i32;
+        gc::line(PRESSED_COLOR, x_pos, y, width as i32 as i32, y);
     }
 }
