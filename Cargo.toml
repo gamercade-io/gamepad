@@ -7,6 +7,10 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+# This will provide a more optimized & smaller file, at the cost of longer compile times
+[profile.release]
+lto = true
+
 # Feel free to add as many dependencies as you like
 [dependencies]
 gamercade_rs = { path = "./../../gc_console/gamercade_rs" }

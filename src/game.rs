@@ -1,15 +1,12 @@
-use gamercade_rs::{
-    prelude::{self as gc},
-    GraphicsParameters,
-};
+use gamercade_rs::prelude::{self as gc, GraphicsParameters};
+
+const PRESSED_COLOR: GraphicsParameters = GraphicsParameters::new().color_index(31);
+const RELEASED_COLOR: GraphicsParameters = GraphicsParameters::new().color_index(9);
 
 #[derive(Default)]
 pub struct MyGame {
     width: usize,
     height: usize,
-
-    pressed_color: GraphicsParameters,
-    released_color: GraphicsParameters,
 
     a: bool,
     b: bool,
@@ -41,9 +38,6 @@ impl crate::Game for MyGame {
         out.width = gc::width();
         out.height = gc::height();
 
-        out.pressed_color = GraphicsParameters::default().color_index(31);
-        out.released_color = GraphicsParameters::default().color_index(9);
-
         out
     }
 
@@ -74,13 +68,34 @@ impl crate::Game for MyGame {
     }
 
     fn draw(&self) {
+        // Clear the screen each frame
         gc::clear_screen(GraphicsParameters::default());
 
-        // Draw the ABCD Buttons
+        self.draw_buttons();
+        self.draw_dpad();
+        self.draw_start_select();
+        self.draw_sticks();
+
+        // TODO: Draw Shoulders
+
+        // TODO: Draw Triggers
+    }
+}
+
+impl MyGame {
+    fn get_button_color(&self, field: bool) -> GraphicsParameters {
+        if field {
+            PRESSED_COLOR
+        } else {
+            RELEASED_COLOR
+        }
+    }
+
+    fn draw_buttons(&self) {
         let button_center = ((self.width / 4) * 3, self.height / 2);
         let button_center = (button_center.0 as i32, button_center.1 as i32);
-        let button_distance = (self.width / 12) as i32;
-        let button_radius = (button_distance / 3) as u32;
+        let button_distance = (self.width / 15) as i32;
+        let button_radius = (button_distance / 2) as u32;
 
         gc::circle(
             self.get_button_color(self.a),
@@ -106,25 +121,100 @@ impl crate::Game for MyGame {
             button_center.1 - button_distance,
             button_radius,
         );
-
-        // TODO: Draw Start & Select
-
-        // TODO: Draw Dpad
-
-        // TODO: Draw Left & Right Stick
-
-        // TODO: Draw Shoulders
-
-        // TODO: Draw Triggers
     }
-}
 
-impl MyGame {
-    fn get_button_color(&self, field: bool) -> GraphicsParameters {
-        if field {
-            self.pressed_color
-        } else {
-            self.released_color
-        }
+    fn draw_start_select(&self) {
+        let ss_center = (self.width / 2, self.height / 2);
+        let ss_distance = (self.width / 20) as i32;
+        let ss_width = (self.width / 20) as u32;
+        let ss_height = (self.height / 20) as u32;
+        let ss_center = (
+            ss_center.0 as i32 - (ss_width as i32 / 2),
+            ss_center.1 as i32 - (ss_height as i32 / 2),
+        );
+
+        gc::rect(
+            self.get_button_color(self.select),
+            ss_center.0 - ss_distance,
+            ss_center.1,
+            ss_width,
+            ss_height,
+        );
+        gc::rect(
+            self.get_button_color(self.start),
+            ss_center.0 + ss_distance,
+            ss_center.1,
+            ss_width,
+            ss_height,
+        );
+    }
+
+    fn draw_dpad(&self) {
+        let dpad_center = ((self.width / 4), self.height / 2);
+        let dpad_distance = (self.width / 15) as i32;
+        let dpad_radius = (dpad_distance) as u32;
+        let dpad_center = (
+            dpad_center.0 as i32 - (dpad_distance / 2),
+            dpad_center.1 as i32 - (dpad_distance / 2),
+        );
+
+        gc::rect(
+            self.get_button_color(self.right),
+            dpad_center.0 + dpad_distance,
+            dpad_center.1,
+            dpad_radius,
+            dpad_radius,
+        );
+        gc::rect(
+            self.get_button_color(self.down),
+            dpad_center.0,
+            dpad_center.1 + dpad_distance,
+            dpad_radius,
+            dpad_radius,
+        );
+        gc::rect(
+            self.get_button_color(self.left),
+            dpad_center.0 - dpad_distance,
+            dpad_center.1,
+            dpad_radius,
+            dpad_radius,
+        );
+        gc::rect(
+            self.get_button_color(self.up),
+            dpad_center.0,
+            dpad_center.1 - dpad_distance,
+            dpad_radius,
+            dpad_radius,
+        );
+    }
+
+    fn draw_sticks(&self) {
+        let columns = (self.width / 10) as i32;
+        let rows = ((self.height / 5) * 4) as i32;
+
+        self.draw_stick(columns * 4, rows, self.left_axis.0, self.left_axis.1);
+        self.draw_stick(columns * 6, rows, self.left_axis.0, self.left_axis.1);
+    }
+
+    fn draw_stick(&self, x: i32, y: i32, x_axis: f32, y_axis: f32) {
+        let square = (self.width / 8) as i32;
+
+        gc::rect(
+            RELEASED_COLOR,
+            x - (square / 2),
+            y - (square / 2),
+            square as u32,
+            square as u32,
+        );
+
+        let x_pos = ((x_axis * square as f32).round() as i32) + x;
+        let y_pos = ((y_axis * square as f32).round() as i32) + y;
+
+        self.draw_cross(PRESSED_COLOR, x_pos, y_pos, 2);
+    }
+
+    fn draw_cross(&self, gp: GraphicsParameters, x: i32, y: i32, half_length: i32) {
+        gc::line(gp, x - half_length, y, x + half_length, y);
+        gc::line(gp, x, y - half_length, x, y + half_length);
     }
 }
