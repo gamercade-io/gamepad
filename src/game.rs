@@ -192,23 +192,36 @@ impl MyGame {
         let columns = (self.width / 10) as i32;
         let rows = ((self.height / 5) * 4) as i32;
 
-        self.draw_stick(columns * 4, rows, self.left_axis.0, self.left_axis.1);
-        self.draw_stick(columns * 6, rows, self.left_axis.0, self.left_axis.1);
+        self.draw_stick(
+            self.left_stick,
+            columns * 4,
+            rows,
+            self.left_axis.0,
+            self.left_axis.1,
+        );
+        self.draw_stick(
+            self.right_stick,
+            columns * 6,
+            rows,
+            self.right_axis.0,
+            self.right_axis.1,
+        );
     }
 
-    fn draw_stick(&self, x: i32, y: i32, x_axis: f32, y_axis: f32) {
+    fn draw_stick(&self, pressed: bool, x: i32, y: i32, x_axis: f32, y_axis: f32) {
         let square = (self.width / 8) as i32;
+        let half_square = square / 2;
 
         gc::rect(
-            RELEASED_COLOR,
-            x - (square / 2),
-            y - (square / 2),
+            self.get_button_color(pressed),
+            x - half_square,
+            y - half_square,
             square as u32,
             square as u32,
         );
 
-        let x_pos = ((x_axis * square as f32).round() as i32) + x;
-        let y_pos = ((y_axis * square as f32).round() as i32) + y;
+        let x_pos = ((x_axis * half_square as f32).round() as i32) + x;
+        let y_pos = ((-y_axis * half_square as f32).round() as i32) + y;
 
         self.draw_cross(PRESSED_COLOR, x_pos, y_pos, 2);
     }
